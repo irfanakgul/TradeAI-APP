@@ -8,13 +8,39 @@ from pyspark.sql.types import *
 
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as F
+from sqlalchemy import create_engine
 
+engine = create_engine('sqlite:///trade_ai.db')
 # ----------------------------
 # User parameters
 # ----------------------------
 INIT_PERIOD = "daily"  # "1min", "15min", "daily"
 INIT_DAY = "2026-01-01"  # Start date for data fetch
 TICKERS = ["AAPL", "MSFT", "GOOGL"]
+
+def fn_read_from_db(table_name, engine, columns=None, where=None):
+
+    # SELECT cümlesi oluştur
+    cols = ", ".join(columns) if columns else "*"
+    sql = f"SELECT {cols} FROM {table_name}"
+    
+    if where:
+        sql += f" WHERE {where}"
+    
+    # pandas ile SQL sorgusu çalıştır
+    df = pd.read_sql(sql, con=engine)
+    return df
+
+def fn_write_to_db(df, table_name, if_exists="replace"):
+    df.to_sql(
+        name=table_name,
+        con=engine,
+        if_exists=if_exists,
+        index=False,
+        method="multi"  # performans için
+    )
+    print(f'*** SAVED TO DB: {table_name} | {if_exists}')
+
 
 
 ###########################################################################
@@ -132,11 +158,12 @@ for t in TICKERS:
     # ----------------------------
     # Fetch historical data
     # ----------------------------
-    if interval == "1d":
+    if INIT_PERIOD == "daily":
         hist = ticker.history(start=INIT_DAY, interval=interval)
         adj_date = 'Date'
+        interval = INIT_PERIOD
 
-    else:
+    else: # 1min and 15min
         hist = ticker.history(period=period, interval=interval)
         adj_date = 'Datetime'
 
@@ -194,7 +221,6 @@ for t in TICKERS:
         "INTERVAL": INIT_PERIOD,
         "RUNTIME": runtime,
         "USERNAME": 'irfanA'
-
     })
 
     # ----------------------------
@@ -210,5 +236,15 @@ final_df.printSchema()
 
 #add row id
 final_df = add_row_id_spark(final_df)
-pandas_df = final_df.toPandas()
-pandas_df.to_excel('res.xlsx', index=False)
+
+
+pds = final_df.toPandas()
+
+lst_exist_row_ids = list(fn_read_from_db(f'raw_ticker_{interval}', engine=engine)['ROW_ID'])
+lst_exist_row_ids = [x.strip() for x in lst_exist_row_ids]
+pds['ROW_ID'] = pds['ROW_ID'].str.strip()
+pds_dist = pds[~pds['ROW_ID'].isin(lst_exist_row_ids)]
+
+print(f'** New record count: {len(pds_dist)}')
+
+fn_write_to_db(df=pds_dist, table_name=f'raw_ticker_{interval}', if_exists="append")
