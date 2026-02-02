@@ -1,3 +1,4 @@
+import os
 import yfinance as yf
 import pandas as pd
 import numpy as np
@@ -5,12 +6,58 @@ from datetime import datetime
 from pyspark.sql import SparkSession
 from pyspark.sql.types import *
 
+from pyspark.sql import DataFrame
+from pyspark.sql import functions as F
+
 # ----------------------------
 # User parameters
 # ----------------------------
 INIT_PERIOD = "daily"  # "1min", "15min", "daily"
 INIT_DAY = "2026-01-01"  # Start date for data fetch
 TICKERS = ["AAPL", "MSFT", "GOOGL"]
+
+
+
+
+
+###########################################################################
+def add_row_id_spark(df: DataFrame) -> DataFrame:
+    """
+    Adds ROW_ID column to Spark DataFrame.
+    Uses original DATETIME string to avoid timezone shifts.
+    """
+
+    # Build time_param directly from string
+    df = df.withColumn(
+        "TIME_PARAM",
+        F.concat(
+            F.substring("DATETIME", 1, 4),   # YYYY
+            F.substring("DATETIME", 6, 2),   # MM
+            F.substring("DATETIME", 9, 2),   # DD
+            F.lit("_"),
+            F.substring("DATETIME", 12, 2),  # HH
+            F.substring("DATETIME", 15, 2),  # MM
+        )
+    )
+
+    # Create ROW_ID
+    df = df.withColumn(
+        "ROW_ID",
+        F.concat(
+            F.lit("ID_"),
+            F.col("TICKER"),
+            F.lit("_"),
+            F.col("TIME_PARAM"),
+            F.lit("_"),
+            F.col("INTERVAL")
+        )
+    )
+
+    df = df.drop("TIME_PARAM")
+
+    return df
+
+
 
 # ----------------------------
 # Initialize Spark session
@@ -24,7 +71,7 @@ spark = SparkSession.builder \
 # ----------------------------
 schema = StructType([
     StructField("TICKER", StringType()),
-    StructField("DATE_TIME", StringType()),  # For intraday, store as string with timestamp
+    StructField("DATETIME", StringType()),  # For intraday, store as string with timestamp
     StructField("OPEN", DoubleType()),
     StructField("HIGH", DoubleType()),
     StructField("LOW", DoubleType()),
@@ -54,9 +101,7 @@ schema = StructType([
     StructField("INTERVAL", StringType()),  # New column for init_period
 
     StructField("RUNTIME", StringType()),
-    StructField("USERNAME", StringType()), #pulling username
-
-
+    StructField("USERNAME", StringType()) #pulling username
 
 ])
 
@@ -92,9 +137,11 @@ for t in TICKERS:
     # ----------------------------
     if interval == "1d":
         hist = ticker.history(start=INIT_DAY, interval=interval)
+        adj_date = 'Date'
 
     else:
         hist = ticker.history(period=period, interval=interval)
+        adj_date = 'Datetime'
 
 
     if hist.empty:
@@ -112,19 +159,15 @@ for t in TICKERS:
     # ----------------------------
     runtime = datetime.now().strftime("%m-%d-%Y | %H:%M")
 
+
+
     # ----------------------------
     # Map data to Pandas DataFrame, fill missing with np.nan
     # ----------------------------
 
-    if interval == "1d":
-        date_ = hist.Date
-    else:
-        date_ = hist.Datetime
-
-
     pdf = pd.DataFrame({
         "TICKER": t,
-        "DATE_TIME": date_,    #hist.Datetime,  # string for intraday timestamps
+        "DATETIME": pd.to_datetime(hist[adj_date]),    #hist.Datetime,  # string for intraday timestamps
         "OPEN": hist.get("Open", np.nan),
         "HIGH": hist.get("High", np.nan),
         "LOW": hist.get("Low", np.nan),
@@ -167,5 +210,8 @@ for t in TICKERS:
 # Show schema and preview
 # ----------------------------
 final_df.printSchema()
+
+#add row id
+final_df = add_row_id_spark(final_df)
 pandas_df = final_df.toPandas()
 pandas_df.to_excel('res.xlsx', index=False)
