@@ -1,0 +1,5 @@
+run in terminal orderly ...
+
+
+conda activate base
+conda install -c conda-forge openjdk=20

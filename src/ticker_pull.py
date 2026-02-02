@@ -17,9 +17,6 @@ INIT_DAY = "2026-01-01"  # Start date for data fetch
 TICKERS = ["AAPL", "MSFT", "GOOGL"]
 
 
-
-
-
 ###########################################################################
 def add_row_id_spark(df: DataFrame) -> DataFrame:
     """
