@@ -1,0 +1,79 @@
+DATAFRAME COLUMN DESCRIPTIONS
+
+TICKER
+Hisse senedinin borsadaki benzersiz sembolünü temsil eder.
+Örnekler: AAPL, MSFT, TSLA.
+Aynı DataFrame içinde birden fazla şirkete ait verinin tutulmasını sağlar.
+Filtreleme, gruplama ve join işlemlerinde anahtar kolon olarak kullanılır.
+
+DATE
+İlgili satırdaki fiyat bilgisinin ait olduğu zaman bilgisidir.
+Seçilen periyoda göre anlamı değişir:
+
+1min: Dakika bazlı zaman damgası (örnek: 2026-01-02 14:12:00)
+
+15min: 15 dakikalık zaman aralığı
+
+daily: Günlük tarih (örnek: 2026-01-02)
+Zaman serisi analizlerinin temel kolonudur.
+
+OPEN
+Belirtilen zaman aralığında gerçekleşen ilk işlem fiyatıdır.
+Piyasanın ilgili periyoda hangi seviyeden başladığını gösterir.
+Açılış gap analizleri ve kısa vadeli stratejilerde kullanılır.
+
+HIGH
+İlgili zaman aralığında görülen en yüksek işlem fiyatıdır.
+Direnç seviyeleri, volatilite ve fiyat aralığı analizlerinde kullanılır.
+
+LOW
+İlgili zaman aralığında görülen en düşük işlem fiyatıdır.
+Destek seviyeleri ve risk analizi için önemlidir.
+HIGH kolonu ile birlikte fiyat aralığını tanımlar.
+
+CLOSE
+Belirtilen zaman aralığının son işlem fiyatıdır.
+Teknik analizde en çok kullanılan fiyat bilgisidir.
+RSI, MACD, SMA, EMA gibi birçok indikatör CLOSE üzerinden hesaplanır.
+
+ADJ_CLOSE
+Temettü ödemeleri ve hisse bölünmeleri gibi şirket aksiyonlarına göre düzeltilmiş kapanış fiyatıdır.
+Uzun vadeli performans ve getiri hesaplamaları için kullanılır.
+Backtest ve historical analizlerde CLOSE yerine tercih edilir.
+
+VOLUME
+İlgili zaman aralığında el değiştiren toplam hisse adedini gösterir.
+Likiditeyi ve fiyat hareketinin gücünü analiz etmek için kullanılır.
+Fiyat ile birlikte değerlendirildiğinde daha anlamlı sonuçlar verir.
+
+COUNTRY
+Hisse senedine ait şirketin bulunduğu veya işlem gördüğü ülkeyi belirtir.
+Örnekler: USA, GERMANY, TURKEY.
+Ülke bazlı analizler ve makro karşılaştırmalar için kullanılır.
+
+PERIOD
+Verinin hangi zaman çözünürlüğünde çekildiğini gösterir.
+Alabileceği değerler:
+
+1min
+
+15min
+
+daily
+Aynı tabloda farklı frekanstaki verilerin birlikte tutulmasını sağlar.
+
+RUNTIME
+Verinin sisteme çekildiği tarih ve saat bilgisini gösterir.
+Format örneği:
+02-01-2026 | 14:12
+Verinin güncelliğini takip etmek, pipeline kontrolü ve yeniden çalıştırma senaryoları için kullanılır.
+
+GENEL NOTLAR
+
+Tüm kolonlar sabit ve standart bir şema ile oluşturulmuştur.
+
+Eksik veriler NaN ile doldurularak veri bütünlüğü korunur.
+
+Time-series analizi, makine öğrenmesi ve Spark işlemleri için uygundur.
+
+Çoklu şirket ve çoklu zaman periyodu tek DataFrame içinde yönetilebilir.
