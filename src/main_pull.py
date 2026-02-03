@@ -6,17 +6,15 @@ from datetime import datetime
 # User parameters
 # ----------------------------
 INIT_PERIOD = "daily"  # "1min", "15min", "daily"
-INIT_DAY = "2026-01-01"  # Start date for data fetch
-country = "Turkey"
+INIT_DAY = "2010-01-01"  # Start date for data fetch
+country = "United States"
 
-df_ww = fn_read_from_db('worldwide_tickername_dataset')
-lst_tickers = list(df_ww[df_ww['Country']==country]['Ticker'].unique())
-
-
+df_ticker = fn_read_from_db('usa_first2000_company')
+lst_tickers = list(df_ticker['TICKER'].unique())
 
 for TICKER in lst_tickers:
     try:
-        print(f'______{TICKER}')
+        print(f'______{TICKER}_____')
         # MASTER TICKER PULL
         fn_pull_ticker_info(TICKER,INIT_DAY, INIT_PERIOD)
 
@@ -29,6 +27,5 @@ for TICKER in lst_tickers:
         fn_write_to_db(df=df_err, table_name=f'error_tickers', if_exists="append")
         print(f'ERROR: {TICKER} | {e}')
         continue
-
 
 print('✅ ALL DONE')
