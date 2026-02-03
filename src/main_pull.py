@@ -15,6 +15,7 @@ lst_tickers = list(df_ww[df_ww['Country']=='USA']['Ticker'].unique())
 
 for TICKER in lst_tickers:
     try:
+        print(f'______{TICKER}')
         # MASTER TICKER PULL
         fn_pull_ticker_info(TICKER,INIT_DAY, INIT_PERIOD)
     except Exception as e:

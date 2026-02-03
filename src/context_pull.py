@@ -79,7 +79,7 @@ def add_row_id_spark(df):
     return df
 
 # MASTER FUNC
-def fn_pull_ticker_info(LST_TICKERS,INIT_DAY, INIT_PERIOD):
+def fn_pull_ticker_info(TICKER,INIT_DAY, INIT_PERIOD):
     
     # ----------------------------
     # Initialize Spark session
@@ -139,96 +139,92 @@ def fn_pull_ticker_info(LST_TICKERS,INIT_DAY, INIT_PERIOD):
     # ----------------------------
     # Loop through tickers
     # ----------------------------
-    for t in LST_TICKERS:
-        ticker = yf.Ticker(t)
+    # for t in LST_TICKERS:
+    ticker = yf.Ticker(TICKER)
 
-        # ----------------------------
-        # Determine interval & start date
-        # ----------------------------
-        if INIT_PERIOD.lower() == "1min":
-            interval = "1m"
-            period = "7d"  # max for 1min interval
-        elif INIT_PERIOD.lower() == "15min":
-            interval = "15m"
-            period = "60d"  # max for 15min interval
-        elif INIT_PERIOD.lower() == "daily":
-            interval = "1d"
-            period = None  # we will use start date instead
-        else:
-            interval = "1d"
-            period = None
+    # ----------------------------
+    # Determine interval & start date
+    # ----------------------------
+    if INIT_PERIOD.lower() == "1min":
+        interval = "1m"
+        period = "7d"  # max for 1min interval
+    elif INIT_PERIOD.lower() == "15min":
+        interval = "15m"
+        period = "60d"  # max for 15min interval
+    elif INIT_PERIOD.lower() == "daily":
+        interval = "1d"
+        period = None  # we will use start date instead
+    else:
+        interval = "1d"
+        period = None
 
-        # ----------------------------
-        # Fetch historical data
-        # ----------------------------
-        if INIT_PERIOD == "daily":
-            hist = ticker.history(start=INIT_DAY, interval=interval)
-            adj_date = 'Date'
-            interval = INIT_PERIOD
+    # ----------------------------
+    # Fetch historical data
+    # ----------------------------
+    if INIT_PERIOD == "daily":
+        hist = ticker.history(start=INIT_DAY, interval=interval)
+        adj_date = 'Date'
+        interval = INIT_PERIOD
 
-        else: # 1min and 15min
-            hist = ticker.history(period=period, interval=interval)
-            adj_date = 'Datetime'
+    else: # 1min and 15min
+        hist = ticker.history(period=period, interval=interval)
+        adj_date = 'Datetime'
 
+    hist.reset_index(inplace=True)
 
-        if hist.empty:
-            continue
+    # ----------------------------
+    # Get company info
+    # ----------------------------
+    info = ticker.info
 
-        hist.reset_index(inplace=True)
+    # ----------------------------
+    # Runtime timestamp
+    # ----------------------------
+    runtime = datetime.now().strftime("%m-%d-%Y | %H:%M")
 
-        # ----------------------------
-        # Get company info
-        # ----------------------------
-        info = ticker.info
+    # ----------------------------
+    # Map data to Pandas DataFrame, fill missing with np.nan
+    # ----------------------------
 
-        # ----------------------------
-        # Runtime timestamp
-        # ----------------------------
-        runtime = datetime.now().strftime("%m-%d-%Y | %H:%M")
+    pdf = pd.DataFrame({
+        "TICKER": TICKER,
+        "DATETIME": pd.to_datetime(hist[adj_date]),    #hist.Datetime,  # string for intraday timestamps
+        "OPEN": hist.get("Open", np.nan),
+        "HIGH": hist.get("High", np.nan),
+        "LOW": hist.get("Low", np.nan),
+        "CLOSE": hist.get("Close", np.nan),
+        "ADJ_CLOSE": hist.get("Adj Close", np.nan),
+        "VOLUME": hist.get("Volume", np.nan),
+        "DIVIDENDS": hist.get("Dividends", np.nan),
+        "STOCK_SPLITS": hist.get("Stock Splits", np.nan),
+        "SHORT_NAME": info.get("shortName", np.nan),
+        "SECTOR": info.get("sector", np.nan),
+        "INDUSTRY": info.get("industry", np.nan),
+        "COUNTRY": info.get("country", np.nan),
+        "CURRENCY": info.get("currency", np.nan),
+        "EXCHANGE": info.get("exchange", np.nan),
+        "MARKET_CAP": info.get("marketCap", np.nan),
+        "BETA": info.get("beta", np.nan),
+        "SHARES_OUTSTANDING": info.get("sharesOutstanding", np.nan),
+        "TRAILING_PE": info.get("trailingPE", np.nan),
+        "FORWARD_PE": info.get("forwardPE", np.nan),
+        "PRICE_TO_BOOK": info.get("priceToBook", np.nan),
+        "ENTERPRISE_VALUE": info.get("enterpriseValue", np.nan),
+        "PROFIT_MARGINS": info.get("profitMargins", np.nan),
+        "ROE": info.get("returnOnEquity", np.nan),
+        "DEBT_TO_EQUITY": info.get("debtToEquity", np.nan),
+        "FREE_CASHFLOW": info.get("freeCashflow", np.nan),
+        "OPERATING_CASHFLOW": info.get("operatingCashflow", np.nan),
+        "INTERVAL": INIT_PERIOD,
+        "RUNTIME": runtime,
+        "USERNAME": 'irfanA'
+    })
 
-        # ----------------------------
-        # Map data to Pandas DataFrame, fill missing with np.nan
-        # ----------------------------
-
-        pdf = pd.DataFrame({
-            "TICKER": t,
-            "DATETIME": pd.to_datetime(hist[adj_date]),    #hist.Datetime,  # string for intraday timestamps
-            "OPEN": hist.get("Open", np.nan),
-            "HIGH": hist.get("High", np.nan),
-            "LOW": hist.get("Low", np.nan),
-            "CLOSE": hist.get("Close", np.nan),
-            "ADJ_CLOSE": hist.get("Adj Close", np.nan),
-            "VOLUME": hist.get("Volume", np.nan),
-            "DIVIDENDS": hist.get("Dividends", np.nan),
-            "STOCK_SPLITS": hist.get("Stock Splits", np.nan),
-            "SHORT_NAME": info.get("shortName", np.nan),
-            "SECTOR": info.get("sector", np.nan),
-            "INDUSTRY": info.get("industry", np.nan),
-            "COUNTRY": info.get("country", np.nan),
-            "CURRENCY": info.get("currency", np.nan),
-            "EXCHANGE": info.get("exchange", np.nan),
-            "MARKET_CAP": info.get("marketCap", np.nan),
-            "BETA": info.get("beta", np.nan),
-            "SHARES_OUTSTANDING": info.get("sharesOutstanding", np.nan),
-            "TRAILING_PE": info.get("trailingPE", np.nan),
-            "FORWARD_PE": info.get("forwardPE", np.nan),
-            "PRICE_TO_BOOK": info.get("priceToBook", np.nan),
-            "ENTERPRISE_VALUE": info.get("enterpriseValue", np.nan),
-            "PROFIT_MARGINS": info.get("profitMargins", np.nan),
-            "ROE": info.get("returnOnEquity", np.nan),
-            "DEBT_TO_EQUITY": info.get("debtToEquity", np.nan),
-            "FREE_CASHFLOW": info.get("freeCashflow", np.nan),
-            "OPERATING_CASHFLOW": info.get("operatingCashflow", np.nan),
-            "INTERVAL": INIT_PERIOD,
-            "RUNTIME": runtime,
-            "USERNAME": 'irfanA'
-        })
-
-        # ----------------------------
-        # Convert Pandas -> Spark DF and append
-        # ----------------------------
-        spark_df = spark.createDataFrame(pdf, schema=schema)
-        final_df = final_df.unionByName(spark_df)
+    # ----------------------------
+    # Convert Pandas -> Spark DF and append
+    # ----------------------------
+    spark_df = spark.createDataFrame(pdf, schema=schema)
+    final_df = final_df.unionByName(spark_df)
 
     # ----------------------------
     # Show schema and preview
