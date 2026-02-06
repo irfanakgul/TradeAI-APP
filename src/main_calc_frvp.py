@@ -27,6 +27,7 @@ for TICKER in LST_TICKERS:
 
     #save to table
     fn_distinct_write_to_db(df=df_res, table_name=SAVED_TABLE,dist_col_name="ROW_ID_FRVP",if_exists= 'append')
+    
 
     print(f'✅ {TICKER} FRVP ({INTERVAL}) has been calculated ***')
 print(f'✅✅✅ ALL DONE ✅✅✅')
