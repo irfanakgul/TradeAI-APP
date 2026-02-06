@@ -9,6 +9,8 @@ from sqlalchemy import create_engine
 
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as F
+import warnings
+warnings.filterwarnings("ignore")
 
 # #db connection
 engine = create_engine('sqlite:///trade_ai.db')
@@ -133,7 +135,7 @@ def fn_pull_ticker_info(TICKER,INIT_DAY, INIT_PERIOD):
     final_df = spark.createDataFrame([], schema)
 
     # FOR CHECKING OF EXISTING ROW_ID
-    lst_exist_row_ids = list(fn_read_from_db(f'raw_ticker_{INIT_PERIOD}')['ROW_ID'])
+    lst_exist_row_ids = list(fn_read_from_db(f'tbl_ticker_actual_{INIT_PERIOD}')['ROW_ID'])
     lst_exist_row_ids = [x.strip() for x in lst_exist_row_ids]
 
     # ----------------------------
@@ -242,7 +244,7 @@ def fn_pull_ticker_info(TICKER,INIT_DAY, INIT_PERIOD):
 
     print(f'** New record count: {len(pds_dist)}')
 
-    fn_write_to_db(df=pds_dist, table_name=f'raw_ticker_{interval}', if_exists="append")
+    fn_write_to_db(df=pds_dist, table_name=f'tbl_ticker_actual_{interval}', if_exists="append")
 
 # MASTER TICKER PULL
 # fn_pull_ticker_info(LST_TICKERS,INIT_DAY, INIT_PERIOD)
