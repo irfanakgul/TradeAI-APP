@@ -1,15 +1,16 @@
 import pandas as pd
-from context_pull import fn_pull_ticker_info, fn_read_from_db,fn_write_to_db
+from initial_functions import fn_read_from_db, fn_write_to_db
+from context_ticker_pull import fn_pull_ticker_info
 from datetime import datetime
 
 # ----------------------------
 # User parameters
 # ----------------------------
 INIT_PERIOD = "daily"  # "1min", "15min", "daily"
-INIT_DAY = "2010-01-01"  # Start date for data fetch
-country = "United States"
+INIT_DAY = "2024-01-01"  # Start date for data fetch
+country = "Turkey"
 
-df_ticker = fn_read_from_db('usa_first2000_company')
+df_ticker = fn_read_from_db('turkey_first500_company')
 lst_tickers = list(df_ticker['TICKER'].unique())
 
 for TICKER in lst_tickers:
