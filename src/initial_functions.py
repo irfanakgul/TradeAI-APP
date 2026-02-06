@@ -42,3 +42,13 @@ def fn_distinct_write_to_db(df, table_name,dist_col_name, if_exists):
     else:
         print(f'!{dist_col_name} exist!')
 
+# take latest date for update starting
+def fn_get_latest_date_str(table_name, TICKER):
+    df = fn_read_from_db(table_name)[['DATETIME','TICKER']]
+    df = df[df['TICKER']==TICKER]
+    dt = pd.to_datetime(df["DATETIME"])
+    latest_date = dt.max()
+    # YYYY-MM-DD formatında string döndür
+    str_last_date = latest_date.strftime("%Y-%m-%d")
+    print(f'>>> {TICKER} last date: {str_last_date}')
+    return str_last_date

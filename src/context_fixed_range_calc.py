@@ -156,7 +156,8 @@ def fn_compute_frvp_single_range(
         "VAL": prices[lo],
         "VAH": prices[hi],
         "PRICE_BIN": price_bin,
-        "VAL_PERC": value_area_pct
+        "VAL_PERC": value_area_pct,
+        "ROW_ID_FRVP":f'{high_row_id}_{range_}'
     }
 
 

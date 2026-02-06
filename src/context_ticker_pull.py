@@ -9,6 +9,8 @@ from sqlalchemy import create_engine
 
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as F
+import warnings
+warnings.filterwarnings("ignore")
 
 # #db connection
 engine = create_engine('sqlite:///trade_ai.db')
