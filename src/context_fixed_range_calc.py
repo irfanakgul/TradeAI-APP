@@ -204,7 +204,8 @@ def fn_frvp_calc(SOURCE_TABLE,
                  TICKER,
                  INTERVAL,
                  VALUE_AREA_PERC,
-                  PRICE_BIN):
+                  PRICE_BIN,
+                  CUT_OFF):
     
 
     df = fn_read_from_db(f'{SOURCE_TABLE}')[[
@@ -212,6 +213,16 @@ def fn_frvp_calc(SOURCE_TABLE,
         'VOLUME','INTERVAL','COUNTRY','ROW_ID']]
 
     df_ticker= df[df['TICKER'] == TICKER]
+
+    # cut end data
+    if CUT_OFF != None:
+        
+        df_ticker = df_ticker[
+            pd.to_datetime(df_ticker['DATETIME'], errors='coerce')
+            .dt.date
+            <= pd.to_datetime(CUT_OFF).date()
+            ]     
+        print(f'⚠️ CUT_OFF is ACTIVE: {CUT_OFF}')
 
     df_res = compute_frvp_batch(
         df=df_ticker,

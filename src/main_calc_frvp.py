@@ -8,6 +8,7 @@ PRICE_BIN = 1.0
 VALUE_AREA_PERC = 0.68
 LST_TICKERS = ['ULKER.IS','DOAS.IS','CIMSA.IS','ASUZU.IS','ALKA.IS']
 SAVED_TABLE = f'tbl_FRVP_{INTERVAL}'
+CUT_OFF = None
 
 
 for TICKER in LST_TICKERS:
@@ -23,7 +24,8 @@ for TICKER in LST_TICKERS:
                     TICKER=TICKER,
                     INTERVAL = INTERVAL,
                     VALUE_AREA_PERC = VALUE_AREA_PERC,
-                    PRICE_BIN = PRICE_BIN)
+                    PRICE_BIN = PRICE_BIN,
+                    CUT_OFF=CUT_OFF)
 
     #save to table
     fn_distinct_write_to_db(df=df_res, table_name=SAVED_TABLE,dist_col_name="ROW_ID_FRVP",if_exists= 'append')
