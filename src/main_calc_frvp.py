@@ -5,8 +5,8 @@ from context_ticker_pull import fn_pull_ticker_info
 SOURCE_TABLE = 'tbl_ticker_actual_daily'
 INTERVAL = 'daily'
 PRICE_BIN = 1.0
-VALUE_AREA_PERC = 0.70
-LST_TICKERS = ['BIMAS.IS']
+VALUE_AREA_PERC = 0.68
+LST_TICKERS = ['ULKER.IS','DOAS.IS','CIMSA.IS','ASUZU.IS','ALKA.IS']
 SAVED_TABLE = f'tbl_FRVP_{INTERVAL}'
 
 
@@ -26,7 +26,7 @@ for TICKER in LST_TICKERS:
                     PRICE_BIN = PRICE_BIN)
 
     #save to table
-    fn_write_to_db(df_res, SAVED_TABLE, "replace")
-    print(f'✅ {TICKER} FRVP ({INTERVAL}) has been calculated ***')
+    fn_distinct_write_to_db(df=df_res, table_name=SAVED_TABLE,dist_col_name="ROW_ID_FRVP",if_exists= 'append')
 
-    print(f'✅✅✅ ALL DONE ✅✅✅')
+    print(f'✅ {TICKER} FRVP ({INTERVAL}) has been calculated ***')
+print(f'✅✅✅ ALL DONE ✅✅✅')
