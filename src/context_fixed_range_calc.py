@@ -21,9 +21,9 @@ def fn_compute_frvp_single_range(
         "1day": "1D",
         "1week": "7D",
         "2week": "14D",
-        "1mounth": "30D",
-        "3mounth": "90D",
-        "6mounth": "180D",
+        "1months": "30D",
+        "3months": "90D",
+        "6months": "180D",
         "1year": "365D",
         "2year": "730D"
     }
@@ -32,9 +32,9 @@ def fn_compute_frvp_single_range(
         "1day": {"1min", "15min"},
         "1week": {"1min", "15min"},
         "2week": {"15min"},
-        "1mounth": {"15min", "daily"},
-        "3mounth": {"daily"},
-        "6mounth": {"daily"},
+        "1months": {"15min", "daily"},
+        "3months": {"daily"},
+        "6months": {"daily"},
         "1year": {"daily"},
         "2year": {"daily"},
     }
@@ -176,9 +176,9 @@ def compute_frvp_batch(
     ranges = [
     "1day",
     "1week",
-    "1mounth",
-    "3mounth",
-    "6mounth",
+    "1months",
+    "3months",
+    "6months",
     "1year",
     "2year"
 ]
