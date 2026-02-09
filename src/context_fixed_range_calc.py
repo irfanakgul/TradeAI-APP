@@ -3,6 +3,8 @@ import pandas as pd
 import numpy as np
 from collections import defaultdict
 import json
+from datetime import datetime
+
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -230,4 +232,6 @@ def fn_frvp_calc(SOURCE_TABLE,
         price_bin=PRICE_BIN,
         value_area_pct=VALUE_AREA_PERC
     )
+    runTime = f'{datetime.now().strftime("%d.%m.%Y")} - {datetime.now().strftime("%H:%M")}'
+    df_res['RUNTIME'] = runTime
     return df_res
