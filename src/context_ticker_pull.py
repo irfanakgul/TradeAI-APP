@@ -236,7 +236,6 @@ def fn_pull_ticker_info(TICKER,INIT_DAY, INIT_PERIOD):
     #add row id
     final_df = add_row_id_spark(final_df)
 
-
     pds = final_df.toPandas()
 
     pds['ROW_ID'] = pds['ROW_ID'].str.strip()
