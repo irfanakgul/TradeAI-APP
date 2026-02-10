@@ -8,10 +8,6 @@ from datetime import datetime
 import warnings
 warnings.filterwarnings("ignore")
 
-
-# -----------------------------------------
-# Tek range için FRVP (HIGH bazlı)
-# -----------------------------------------
 def fn_compute_frvp_single_range(
     df: pd.DataFrame,
     interval: str,
@@ -50,30 +46,23 @@ def fn_compute_frvp_single_range(
         return None
 
     df = df.copy()
-
     df["DATETIME"] = pd.to_datetime(df["DATETIME"])
-
-    # 🔑 KRİTİK: kronolojik sırala
     df = df.sort_values("DATETIME").reset_index(drop=True)
 
     end_dt = df["DATETIME"].max()
     start_dt_range = end_dt - pd.Timedelta(RANGE_TO_PANDAS[range_])
-
     df_range = df[df["DATETIME"] >= start_dt_range]
+
     if df_range.empty:
         return None
-    #
+
     max_high = df_range["HIGH"].max()
     max_high_idx = df_range["HIGH"].idxmax()
     datetime_value = str(df_range.loc[max_high_idx, "DATETIME"])
     high_row_id = df_range.loc[max_high_idx, "ROW_ID"]
 
-
     high_value = max_high
     high_datetime = datetime_value
-
-
-    # 🔑 hesaplama HIGH sonrası
     df_calc = df[df["DATETIME"] >= high_datetime]
 
     if df_calc.empty:
@@ -82,10 +71,9 @@ def fn_compute_frvp_single_range(
     row_count_after_high = len(df_calc)
 
     # ---------------------------------
-    # FRVP
+    # FRVP hesaplama
     # ---------------------------------
     frvp = defaultdict(float)
-
     for _, row in df_calc.iterrows():
         low = row["LOW"]
         high = row["HIGH"]
@@ -104,7 +92,6 @@ def fn_compute_frvp_single_range(
             continue
 
         vol_per_level = volume / len(price_levels)
-
         for p in price_levels:
             frvp[float(p)] += vol_per_level
 
@@ -114,34 +101,44 @@ def fn_compute_frvp_single_range(
     frvp = dict(frvp)
 
     # ---------------------------------
-    # POC
+    # Weighted POC hesaplama (TradingView’e daha yakın)
     # ---------------------------------
-    poc = max(frvp, key=frvp.get)
+    prices = np.array(sorted(frvp.keys()))
+    volumes = np.array([frvp[p] for p in prices])
+    poc = float(np.sum(prices * volumes) / np.sum(volumes))  # weighted POC
 
     # ---------------------------------
-    # VALUE AREA
+    # VAL / VAH hesaplama (POC etrafında cumulative volume)
     # ---------------------------------
-    total_vol = sum(frvp.values())
+    sorted_indices = np.argsort(prices)
+    sorted_prices = prices[sorted_indices]
+    sorted_volumes = volumes[sorted_indices]
+    cum_vol = sorted_volumes.copy()
+    total_vol = np.sum(sorted_volumes)
+
+    # POC index
+    poc_idx = np.searchsorted(sorted_prices, poc)
+
+    lo = hi = poc_idx
+    cum_vol_current = sorted_volumes[poc_idx]
     target_vol = total_vol * value_area_pct
 
-    prices = sorted(frvp.keys())
-    poc_idx = prices.index(poc)
+    # TradingView mantığına benzer şekilde genişlet
+    while cum_vol_current < target_vol:
+        left_vol = sorted_volumes[lo - 1] if lo > 0 else 0
+        right_vol = sorted_volumes[hi + 1] if hi < len(sorted_prices) - 1 else 0
 
-    cum_vol = frvp[poc]
-    lo = hi = poc_idx
-
-    while cum_vol < target_vol:
-        left = frvp[prices[lo - 1]] if lo > 0 else 0
-        right = frvp[prices[hi + 1]] if hi < len(prices) - 1 else 0
-
-        if right >= left and hi < len(prices) - 1:
+        if right_vol >= left_vol and hi < len(sorted_prices) - 1:
             hi += 1
-            cum_vol += right
+            cum_vol_current += right_vol
         elif lo > 0:
             lo -= 1
-            cum_vol += left
+            cum_vol_current += left_vol
         else:
             break
+
+    VAL = sorted_prices[lo]
+    VAH = sorted_prices[hi]
 
     return {
         "TICKER": df["TICKER"].iloc[0],
@@ -155,13 +152,12 @@ def fn_compute_frvp_single_range(
         "ROW_COUNT_AFTER_HIGH": row_count_after_high,
         "FRVP_JSON": json.dumps(frvp),
         "POC": poc,
-        "VAL": prices[lo],
-        "VAH": prices[hi],
+        "VAL": VAL,
+        "VAH": VAH,
         "PRICE_BIN": price_bin,
         "VAL_PERC": value_area_pct,
-        "ROW_ID_FRVP":f'{high_row_id}_{range_}'
+        "ROW_ID_FRVP": f'{high_row_id}_{range_}'
     }
-
 
 # -----------------------------------------
 # BATCH RANGE
