@@ -144,3 +144,9 @@ def fn_get_latest_date_str(table_name, TICKER):
     return str_last_date
 
 
+def fn_max_date_calc(tablename,colname):
+    str_max_date = pd.read_sql(f"SELECT MAX({colname}) FROM {tablename}", engine)
+    return str_max_date
+
+
+
