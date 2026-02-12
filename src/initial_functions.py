@@ -32,7 +32,6 @@ engine_local = create_engine('sqlite:///trade_ai.db')
 
 #read from db
 def fn_read_from_db(table_name, columns=None, where=None):
-    print(engine_local)
     # SELECT cümlesi oluştur
     cols = ", ".join(columns) if columns else "*"
     sql = f"SELECT {cols} FROM {table_name}"
