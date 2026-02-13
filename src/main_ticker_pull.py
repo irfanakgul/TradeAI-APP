@@ -6,13 +6,28 @@ from datetime import datetime
 # ----------------------------
 # User parameters
 # ----------------------------
-INIT_PERIOD = "daily"  # "1min", "15min", "daily"
+INIT_PERIOD = "1min"  # "1min", "15min", "daily"
 INIT_DAY = "2024-01-01"  # Start date for data fetch
 country = "Turkey"
 
-df_ticker = fn_read_from_db('turkey_first500_company')
-lst_tickers = list(df_ticker['TICKER'].unique())
+# df_ticker = fn_read_from_db('turkey_first500_company')
+# lst_tickers = list(df_ticker['TICKER'].unique())
 
+lst_tickers = [
+    "AMZN",
+    "AAPL",
+    "DOAS.IS",
+    "NVDA",
+    "NFLX",
+    "ULKER.IS",
+    "ASELS.IS",
+    "CIMSA.IS",
+    "ASUZU.IS",
+    "ALKA.IS",
+    "GSRAY.IS",
+    "SASA.IS",
+    "ADESE.IS"
+]
 for TICKER in lst_tickers:
     try:
         print(f'______{TICKER}_____')

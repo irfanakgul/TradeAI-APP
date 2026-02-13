@@ -7,28 +7,26 @@ import re
 engine_local = create_engine('sqlite:///trade_ai.db')
 
 # # connection into cloud db (central)
-# def cloud_connection():
-#     url = URL.create(
-#     "postgresql+psycopg2",
-#     username="irfan_admin",
-#     password="TradeAPP_IA_2026@",
-#     host="95.216.148.216",
-#     port=5432,
-#     database="trade_app",
-# )
+def cloud_connection():
+    url = URL.create(
+    "postgresql+psycopg2",
+    username="irfan_admin",
+    password="TradeAPP_IA_2026@",
+    host="95.216.148.216",
+    port=5432,
+    database="trade_app",
+)
 
-#     engine = create_engine(url, pool_pre_ping=True)
+    engine = create_engine(url, pool_pre_ping=True)
 
-#     with engine.connect() as conn:
-#         print('========|',conn.execute(text("SELECT current_user, current_database()")).fetchone(),'|========')
+    with engine.connect() as conn:
+        print('========|',conn.execute(text("SELECT current_user, current_database()")).fetchone(),'|========')
 
-#     print('*** ✅ SUCCESSFUL CLOUD CONNECTION ⛓️ ***')
+    print('*** ✅ SUCCESSFUL CLOUD CONNECTION ⛓️ ***')
     
-#     return engine
+    return engine
 
-# engine = cloud_connection()
-
-
+engine = cloud_connection()
 
 #read from db
 def fn_read_from_db(table_name, columns=None, where=None):
