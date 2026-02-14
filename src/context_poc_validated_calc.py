@@ -1,7 +1,7 @@
 from initial_functions import fn_read_from_db, fn_write_to_db
 import pandas as pd
 from sqlalchemy import create_engine
-from context_fixed_range_calc import *
+
 
 def fn_calculate_all_ranges(df, ticker, interval,CUTT_OFF=None):
     df = df.copy()
@@ -81,8 +81,6 @@ def fn_calculate_all_ranges(df, ticker, interval,CUTT_OFF=None):
 
     df_res = pd.DataFrame(results)
     return df_res
-
-
 
 
 #new best 
