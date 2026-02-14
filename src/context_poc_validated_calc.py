@@ -1,6 +1,7 @@
 from initial_functions import fn_read_from_db, fn_write_to_db
 import pandas as pd
 from sqlalchemy import create_engine
+import numpy as np
 
 
 def fn_calculate_all_ranges(df, ticker, interval,CUTT_OFF=None):
