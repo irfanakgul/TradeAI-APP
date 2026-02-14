@@ -1,12 +1,35 @@
 # #db connection
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
+from sqlalchemy.engine import URL
 import pandas as pd
+import re
 
-engine = create_engine('sqlite:///trade_ai.db')
+engine_local = create_engine('sqlite:///trade_ai.db')
+
+# # connection into cloud db (central)
+def cloud_connection():
+    url = URL.create(
+    "postgresql+psycopg2",
+    username="irfan_admin",
+    password="TradeAPP_IA_2026@",
+    host="95.216.148.216",
+    port=5432,
+    database="trade_app",
+)
+
+    engine = create_engine(url, pool_pre_ping=True)
+
+    with engine.connect() as conn:
+        print('========|',conn.execute(text("SELECT current_user, current_database()")).fetchone(),'|========')
+
+    print('*** ✅ SUCCESSFUL CLOUD CONNECTION ⛓️ ***')
+    
+    return engine
+
+engine = cloud_connection()
 
 #read from db
 def fn_read_from_db(table_name, columns=None, where=None):
-
     # SELECT cümlesi oluştur
     cols = ", ".join(columns) if columns else "*"
     sql = f"SELECT {cols} FROM {table_name}"
@@ -15,7 +38,7 @@ def fn_read_from_db(table_name, columns=None, where=None):
         sql += f" WHERE {where}"
     
     # pandas ile SQL sorgusu çalıştır
-    df = pd.read_sql(sql, con=engine)
+    df = pd.read_sql(sql, con=engine_local)
     return df
 
 
@@ -23,7 +46,7 @@ def fn_read_from_db(table_name, columns=None, where=None):
 def fn_write_to_db(df, table_name, if_exists="replace"):
     df.to_sql(
         name=table_name,
-        con=engine,
+        con=engine_local,
         if_exists=if_exists,
         index=False,
         # method="multi",  # performans için
@@ -52,3 +75,8 @@ def fn_get_latest_date_str(table_name, TICKER):
     str_last_date = latest_date.strftime("%Y-%m-%d")
     print(f'>>> {TICKER} last date: {str_last_date}')
     return str_last_date
+
+
+def fn_max_date_calc(tablename,colname):
+    str_max_date = pd.read_sql(f"SELECT MAX({colname}) FROM {tablename}", engine_local)
+    return str_max_date
