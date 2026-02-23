@@ -1,0 +1,1 @@
+fn_write_cloud(df=df, schema='test', name='realtime', if_exists='append',is_only_distinct = True,dist_col='ROW_ID')
